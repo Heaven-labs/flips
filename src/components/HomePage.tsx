@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Play, Sparkles, Zap, Video } from "lucide-react";
 import { useAppStore } from "@/store/useAppStore";
+import FloatingParticles from "./FloatingParticles";
 
 export default function HomePage() {
   const { setCurrentStep } = useAppStore();
@@ -29,8 +30,8 @@ export default function HomePage() {
         <div className="video-overlay" />
       </div>
 
-      {/* Fallback gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900 -z-10" />
+      {/* Fallback dark background */}
+      <div className="absolute inset-0 bg-gray-900 -z-10" />
 
       {/* Content */}
       <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
@@ -119,27 +120,7 @@ export default function HomePage() {
         </motion.div>
 
         {/* Floating particles animation */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(20)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-2 h-2 bg-video-accent/30 rounded-full"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-              }}
-              animate={{
-                y: [0, -100, 0],
-                opacity: [0, 1, 0],
-              }}
-              transition={{
-                duration: 3 + Math.random() * 2,
-                repeat: Infinity,
-                delay: Math.random() * 3,
-              }}
-            />
-          ))}
-        </div>
+        <FloatingParticles />
       </div>
 
       {/* Scroll indicator */}

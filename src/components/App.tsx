@@ -4,8 +4,9 @@ import { useAppStore } from "@/store/useAppStore";
 import HomePage from "./HomePage";
 import FileUpload from "./FileUpload";
 import StyleSelection from "@/components/StyleSelection";
-// import VideoPreview from "./VideoPreview";
-// import VideoDownload from "./VideoDownload";
+import StateDebugger from "./StateDebugger";
+import VideoPreview from "./VideoPreview";
+import VideoDownload from "./VideoDownload";
 
 export default function App() {
   const { currentStep } = useAppStore();
@@ -19,23 +20,18 @@ export default function App() {
       case "style":
         return <StyleSelection />;
       case "preview":
-        return (
-          <div className="min-h-screen flex items-center justify-center text-white">
-            Video Preview Coming Soon...
-          </div>
-        );
+        return <VideoPreview />;
       case "download":
-        return (
-          <div className="min-h-screen flex items-center justify-center text-white">
-            Video Download Coming Soon...
-          </div>
-        );
+        return <VideoDownload />;
       default:
         return <HomePage />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-background">{renderCurrentStep()}</div>
+    <div className="min-h-screen bg-background">
+      {renderCurrentStep()}
+      <StateDebugger />
+    </div>
   );
 }

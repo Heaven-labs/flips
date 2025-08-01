@@ -4,7 +4,7 @@ Config.setVideoImageFormat("jpeg");
 Config.setOverwriteOutput(true);
 Config.setPixelFormat("yuv420p");
 Config.setCodec("h264");
-Config.setEntryPoint("./src/remotion/index.ts");
+Config.setEntryPoint("./src/remotion/index.tsx");
 
 // Performance settings
 Config.setConcurrency(1);
