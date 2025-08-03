@@ -1,7 +1,7 @@
 "use client";
 
 import { useAppStore } from "@/store/useAppStore";
-import { useState, useEffect } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bug, X, Eye, EyeOff, Download, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -20,24 +20,36 @@ export default function StateDebugger() {
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
-  const [renderInfo, setRenderInfo] = useState({
-    timestamp: new Date().toLocaleTimeString(),
-    renders: 0,
-  });
 
-  // Track renders
-  useEffect(() => {
-    setRenderInfo((prev) => ({
-      timestamp: new Date().toLocaleTimeString(),
-      renders: prev.renders + 1,
-    }));
-  }, [
+  // Use useRef to track renders without causing infinite loops
+  const renderCount = useRef(0);
+  const lastUpdateTime = useRef(new Date().toLocaleTimeString());
+  const prevState = useRef({
     currentStep,
-    selectedFiles.length,
-    selectedStyle?.id,
+    selectedFiles: selectedFiles.length,
+    selectedStyle: selectedStyle?.id,
     isGenerating,
     error,
-  ]);
+  });
+
+  // Increment render count on every render (no useEffect needed)
+  renderCount.current += 1;
+
+  // Check if state actually changed to update timestamp
+  const currentState = {
+    currentStep,
+    selectedFiles: selectedFiles.length,
+    selectedStyle: selectedStyle?.id,
+    isGenerating,
+    error,
+  };
+  const stateChanged =
+    JSON.stringify(prevState.current) !== JSON.stringify(currentState);
+
+  if (stateChanged) {
+    lastUpdateTime.current = new Date().toLocaleTimeString();
+    prevState.current = currentState;
+  }
 
   // Only show in development
   if (process.env.NODE_ENV !== "development") {
@@ -180,13 +192,13 @@ export default function StateDebugger() {
                   <div className="flex justify-between">
                     <span>Renders:</span>
                     <span className="font-mono text-yellow-400">
-                      {renderInfo.renders}
+                      {renderCount.current}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Last Update:</span>
                     <span className="font-mono text-gray-400">
-                      {renderInfo.timestamp}
+                      {lastUpdateTime.current}
                     </span>
                   </div>
                 </div>

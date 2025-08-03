@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import { Composition } from "remotion";
 import { CinematicComposition } from "./compositions/CinematicComposition";
@@ -18,7 +19,9 @@ const RemotionRoot: React.FC = () => {
     <>
       <Composition
         id="cinematic"
-        component={CinematicComposition as any}
+        component={
+          CinematicComposition as any /* Remotion v4 type compatibility */
+        }
         durationInFrames={300}
         fps={30}
         width={1920}
@@ -30,7 +33,9 @@ const RemotionRoot: React.FC = () => {
       />
       <Composition
         id="modern"
-        component={ModernComposition as any}
+        component={
+          ModernComposition as any /* Remotion v4 type compatibility */
+        }
         durationInFrames={300}
         fps={30}
         width={1920}
@@ -42,7 +47,9 @@ const RemotionRoot: React.FC = () => {
       />
       <Composition
         id="creative"
-        component={CreativeComposition as any}
+        component={
+          CreativeComposition as any /* Remotion v4 type compatibility */
+        }
         durationInFrames={300}
         fps={30}
         width={1920}

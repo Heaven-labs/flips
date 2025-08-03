@@ -4,10 +4,9 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 });
 
 const nextConfig = {
-  experimental: {
-    turbo: {
-      // Turbopack specific configurations
-    },
+  // Turbopack configuration (moved from experimental.turbo)
+  turbopack: {
+    // Turbopack specific configurations
   },
 
   // Webpack bundle analyzer
@@ -18,11 +17,6 @@ const nextConfig = {
     }
 
     return config;
-  },
-
-  // Environment variables for debugging
-  env: {
-    NODE_ENV: process.env.NODE_ENV,
   },
 
   // Logging for debugging
