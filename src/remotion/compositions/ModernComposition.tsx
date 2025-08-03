@@ -74,7 +74,7 @@ export const ModernComposition: React.FC<VideoCompositionProps> = ({
   // Geometric scale effect
   const scaleEffect = interpolate(
     frameInCurrentFile,
-    [0, 15, durationPerFile - 15, durationPerFile],
+    [0, 15, Math.max(15, durationPerFile - 15), durationPerFile],
     [0.95, 1, 1, 1.05],
     {
       easing: Easing.out(Easing.quad),
@@ -89,7 +89,7 @@ export const ModernComposition: React.FC<VideoCompositionProps> = ({
   // Clean color overlay
   const colorOverlayOpacity = interpolate(
     frameInCurrentFile,
-    [0, 30, durationPerFile - 30, durationPerFile],
+    [0, 30, Math.max(30, durationPerFile - 30), durationPerFile],
     [0.2, 0.1, 0.1, 0.2],
     {
       easing: Easing.inOut(Easing.quad),

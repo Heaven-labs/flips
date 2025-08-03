@@ -77,7 +77,7 @@ export const CreativeComposition: React.FC<VideoCompositionProps> = ({
   // Artistic scale and rotation
   const creativeScale = interpolate(
     frameInCurrentFile,
-    [0, 30, durationPerFile - 30, durationPerFile],
+    [0, 30, Math.max(30, durationPerFile - 30), durationPerFile],
     [1.1, 1, 1, 0.9],
     {
       easing: Easing.inOut(Easing.quad),
@@ -112,7 +112,7 @@ export const CreativeComposition: React.FC<VideoCompositionProps> = ({
   // Particle effects timing
   const particleOpacity = interpolate(
     frameInCurrentFile,
-    [0, 15, durationPerFile - 15, durationPerFile],
+    [0, 15, Math.max(15, durationPerFile - 15), durationPerFile],
     [0, 1, 1, 0],
     {
       easing: Easing.inOut(Easing.quad),

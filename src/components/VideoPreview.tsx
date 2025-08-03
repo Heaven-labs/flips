@@ -1,8 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowLeft, Play, Download, Edit3 } from "lucide-react";
+import { ArrowLeft, Play, Download, Edit3, Sparkles } from "lucide-react";
 import { useAppStore } from "@/store/useAppStore";
+import { Player } from "@remotion/player";
+import { useState, useEffect } from "react";
 
 // Import compositions
 import { CinematicComposition } from "@/remotion/compositions/CinematicComposition";
@@ -11,6 +13,7 @@ import { CreativeComposition } from "@/remotion/compositions/CreativeComposition
 
 export default function VideoPreview() {
   const { selectedFiles, selectedStyle, setCurrentStep } = useAppStore();
+  const [isPreviewReady, setIsPreviewReady] = useState(false);
 
   const handleBack = () => {
     setCurrentStep("style");
@@ -23,6 +26,17 @@ export default function VideoPreview() {
   const handleEditStyle = () => {
     setCurrentStep("style");
   };
+
+  // Auto-generate preview when component mounts
+  useEffect(() => {
+    if (selectedFiles.length > 0 && selectedStyle) {
+      // Small delay to ensure everything is loaded
+      const timer = setTimeout(() => {
+        setIsPreviewReady(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedFiles, selectedStyle]);
 
   // Get the appropriate composition component
   const getCompositionComponent = () => {
@@ -113,25 +127,49 @@ export default function VideoPreview() {
           className="glass rounded-2xl p-6 mb-8"
         >
           <div className="aspect-video bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl overflow-hidden relative group">
-            {/* Placeholder for now since Remotion Player might have issues */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-video-primary/20 flex items-center justify-center">
-                  <Play className="w-8 h-8 text-video-primary" />
-                </div>
-                <h3 className="text-xl font-semibold text-white mb-2">
-                  Video Preview
-                </h3>
-                <p className="text-white/70 mb-4">
-                  {selectedStyle?.name} style with {selectedFiles.length} media
-                  files
-                </p>
-                <div className="text-sm text-white/50">
-                  Preview will be generated when you click &quot;Generate
-                  Video&quot;
+            {isPreviewReady && CompositionComponent ? (
+              <Player
+                component={CompositionComponent}
+                inputProps={compositionProps}
+                durationInFrames={300}
+                fps={30}
+                compositionWidth={1920}
+                compositionHeight={1080}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                }}
+                controls
+                loop
+                autoPlay
+                className="rounded-xl"
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
+                    className="w-16 h-16 mx-auto mb-4 rounded-full bg-video-primary/20 flex items-center justify-center"
+                  >
+                    <Sparkles className="w-8 h-8 text-video-primary" />
+                  </motion.div>
+                  <h3 className="text-xl font-semibold text-white mb-2">
+                    Generating Preview...
+                  </h3>
+                  <p className="text-white/70 mb-4">
+                    Creating {selectedStyle?.name} style preview
+                  </p>
+                  <div className="text-sm text-white/50">
+                    This may take a few seconds
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Style-specific background effect */}
             {selectedStyle?.transitionType === "cinematic" && (
@@ -157,8 +195,8 @@ export default function VideoPreview() {
             onClick={handleGenerate}
             className="flex items-center justify-center space-x-3 px-8 py-4 bg-gradient-to-r from-video-primary to-video-secondary rounded-full text-white font-medium hover:scale-105 transition-transform duration-200 shadow-lg shadow-video-primary/25"
           >
-            <Download className="w-5 h-5" />
-            <span>Generate Video</span>
+            <Sparkles className="w-5 h-5" />
+            <span>Create Reel & Download</span>
           </button>
 
           <button

@@ -80,45 +80,129 @@ export default function VideoDownload() {
     setError(null);
 
     try {
-      // Simulate the generation process
-      for (let i = 0; i < generationStages.length; i++) {
-        const stage = generationStages[i];
+      // Start analysis stage
+      setGenerationStages((prev) =>
+        prev.map((s) =>
+          s.id === "analyze" ? { ...s, status: "in_progress" as const } : s
+        )
+      );
 
-        // Start this stage
+      // Simulate analysis progress
+      for (let progress = 0; progress <= 100; progress += 20) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
         setGenerationStages((prev) =>
-          prev.map((s) =>
-            s.id === stage.id ? { ...s, status: "in_progress" as const } : s
-          )
-        );
-
-        // Simulate progress
-        for (let progress = 0; progress <= 100; progress += 20) {
-          await new Promise((resolve) => setTimeout(resolve, 200));
-          setGenerationStages((prev) =>
-            prev.map((s) => (s.id === stage.id ? { ...s, progress } : s))
-          );
-        }
-
-        // Complete this stage
-        setGenerationStages((prev) =>
-          prev.map((s) =>
-            s.id === stage.id
-              ? { ...s, status: "completed" as const, progress: 100 }
-              : s
-          )
+          prev.map((s) => (s.id === "analyze" ? { ...s, progress } : s))
         );
       }
 
-      // Generation complete
-      const mockVideoUrl = "/generated/sample-video.mp4";
-      setGeneratedVideoUrl(mockVideoUrl);
+      setGenerationStages((prev) =>
+        prev.map((s) =>
+          s.id === "analyze"
+            ? { ...s, status: "completed" as const, progress: 100 }
+            : s
+        )
+      );
+
+      // Start composition stage
+      setGenerationStages((prev) =>
+        prev.map((s) =>
+          s.id === "compose" ? { ...s, status: "in_progress" as const } : s
+        )
+      );
+
+      // Simulate composition progress
+      for (let progress = 0; progress <= 100; progress += 20) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        setGenerationStages((prev) =>
+          prev.map((s) => (s.id === "compose" ? { ...s, progress } : s))
+        );
+      }
+
+      setGenerationStages((prev) =>
+        prev.map((s) =>
+          s.id === "compose"
+            ? { ...s, status: "completed" as const, progress: 100 }
+            : s
+        )
+      );
+
+      // Start rendering stage
+      setGenerationStages((prev) =>
+        prev.map((s) =>
+          s.id === "render" ? { ...s, status: "in_progress" as const } : s
+        )
+      );
+
+      // Call the real API
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          compositionId: selectedStyle?.transitionType,
+          inputProps: {
+            mediaFiles: selectedFiles.map((file) => ({
+              id: file.id,
+              url: file.url,
+              type: file.type,
+            })),
+            durationInFrames: 300,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || "Failed to generate video");
+      }
+
+      // Complete rendering stage
+      setGenerationStages((prev) =>
+        prev.map((s) =>
+          s.id === "render"
+            ? { ...s, status: "completed" as const, progress: 100 }
+            : s
+        )
+      );
+
+      // Start finalization stage
+      setGenerationStages((prev) =>
+        prev.map((s) =>
+          s.id === "finalize" ? { ...s, status: "in_progress" as const } : s
+        )
+      );
+
+      // Simulate finalization progress
+      for (let progress = 0; progress <= 100; progress += 20) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        setGenerationStages((prev) =>
+          prev.map((s) => (s.id === "finalize" ? { ...s, progress } : s))
+        );
+      }
+
+      setGenerationStages((prev) =>
+        prev.map((s) =>
+          s.id === "finalize"
+            ? { ...s, status: "completed" as const, progress: 100 }
+            : s
+        )
+      );
+
+      // Set the generated video URL
+      setGeneratedVideoUrl(result.videoUrl);
 
       // Add to store
       const newVideo = {
         id: Date.now().toString(),
         styleId: selectedStyle!.id,
-        videoUrl: mockVideoUrl,
-        thumbnail: "/generated/sample-thumbnail.jpg",
+        videoUrl: result.videoUrl,
+        thumbnail: result.videoUrl.replace(".mp4", ".jpg"),
         duration: 10,
         generatedAt: new Date(),
       };
@@ -126,7 +210,11 @@ export default function VideoDownload() {
       addGeneratedVideo(newVideo);
     } catch (err) {
       console.error("Generation error:", err);
-      setError("Failed to generate video. Please try again.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to generate video. Please try again."
+      );
 
       // Mark current stage as error
       setGenerationStages((prev) =>
@@ -348,7 +436,7 @@ export default function VideoDownload() {
                   className="flex items-center justify-center space-x-3 px-8 py-4 bg-gradient-to-r from-video-primary to-video-secondary rounded-full text-white font-medium hover:scale-105 transition-transform duration-200 shadow-lg shadow-video-primary/25"
                 >
                   <Download className="w-5 h-5" />
-                  <span>Download Video</span>
+                  <span>Download for Instagram Reel</span>
                 </button>
 
                 <button
