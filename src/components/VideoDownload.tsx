@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useAppStore } from "@/store/useAppStore";
 import { useEffect, useState } from "react";
+import { toast } from "react-hot-toast";
 
 interface GenerationStage {
   id: string;
@@ -65,6 +66,9 @@ export default function VideoDownload() {
   const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string | null>(
     null
   );
+  const [generatedVideoPublicId, setGeneratedVideoPublicId] = useState<
+    string | null
+  >(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -194,14 +198,16 @@ export default function VideoDownload() {
         )
       );
 
-      // Set the generated video URL
+      // Set the generated video URL and store publicId for cleanup
       setGeneratedVideoUrl(result.videoUrl);
+      setGeneratedVideoPublicId(result.publicId);
 
       // Add to store
       const newVideo = {
         id: Date.now().toString(),
         styleId: selectedStyle!.id,
         videoUrl: result.videoUrl,
+        publicId: result.publicId,
         thumbnail: result.videoUrl.replace(".mp4", ".jpg"),
         duration: 10,
         generatedAt: new Date(),
@@ -232,15 +238,49 @@ export default function VideoDownload() {
     setCurrentStep("preview");
   };
 
-  const handleDownload = () => {
-    if (generatedVideoUrl) {
-      // In a real app, this would trigger an actual download
-      const link = document.createElement("a");
-      link.href = generatedVideoUrl;
-      link.download = `flips-video-${selectedStyle?.name.toLowerCase()}-${Date.now()}.mp4`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+  const handleDownload = async () => {
+    if (generatedVideoPublicId) {
+      try {
+        // Get the download URL from our API (which redirects to Cloudinary)
+        const downloadUrl = `/api/download-video?publicId=${generatedVideoPublicId}`;
+
+        // Create a temporary link and trigger download
+        const link = document.createElement("a");
+        link.href = downloadUrl;
+        link.download = `flip-clips-${selectedStyle?.name.toLowerCase()}-${Date.now()}.mp4`;
+        link.target = "_blank"; // Open in new tab to avoid navigation issues
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Delete the video from Cloudinary after a short delay to ensure download starts
+        setTimeout(async () => {
+          try {
+            await fetch("/api/download-video", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                publicId: generatedVideoPublicId,
+              }),
+            });
+            console.log("Video deleted from Cloudinary after download");
+          } catch (deleteError) {
+            console.error(
+              "Failed to delete video from Cloudinary:",
+              deleteError
+            );
+          }
+        }, 2000); // 2 second delay to ensure download starts
+
+        toast.success(
+          "Video downloaded! File will be automatically cleaned up."
+        );
+      } catch (error) {
+        console.error("Download error:", error);
+        toast.error("Failed to download video. Please try again.");
+      }
     }
   };
 

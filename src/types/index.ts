@@ -19,6 +19,7 @@ export interface GeneratedVideo {
   id: string;
   styleId: string;
   videoUrl: string;
+  publicId?: string; // Cloudinary public ID for cleanup
   thumbnail: string;
   duration: number;
   generatedAt: Date;
